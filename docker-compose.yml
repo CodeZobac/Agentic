@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - DATABASE_URL=sqlite:///./agentic.db
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - ollama
+    restart: unless-stopped
+    networks:
+      - agentic-network
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./backend/Modelfile:/models/Modelfile
+      - ollama-data:/root/.ollama
+    restart: unless-stopped
+    networks:
+      - agentic-network
+    command: >
+      sh -c "ollama serve & sleep 10 && ollama create agentic-specialist -f /models/Modelfile && tail -f /dev/null"
+
+networks:
+  agentic-network:
+    driver: bridge
+
+volumes:
+  ollama-data:
