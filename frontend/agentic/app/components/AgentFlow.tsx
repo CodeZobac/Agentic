@@ -1,27 +1,25 @@
 'use client';
 
 import React, { useEffect, useCallback } from 'react';
-import ReactFlow, {
+import { 
+  ReactFlow,
   Background,
   Controls,
   Node,
-  Edge,
   NodeTypes,
-  useReactFlow,
   ReactFlowProvider,
   Panel
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
 import useAgentFlowStore from '../stores/agentFlowStore';
+import { AgentNode as AgentNodeType } from '../stores/agentFlowStore';
 import AgentNode from './AgentNode';
 import AgentSidebar from './AgentSidebar';
 import AgentForm from './AgentForm';
 
-// Define node types
-const nodeTypes: NodeTypes = {
-  agentNode: AgentNode
-};
+// Define the nodeTypes properly
+const nodeTypes = { agentNode: AgentNode } as NodeTypes;
 
 // Wrapper component to ensure useReactFlow is used within a ReactFlowProvider
 const AgentFlowInner = () => {
@@ -38,16 +36,14 @@ const AgentFlowInner = () => {
     error
   } = useAgentFlowStore();
   
-  const reactFlowInstance = useReactFlow();
-  
   // Load agents on component mount
   useEffect(() => {
     fetchAgents();
   }, [fetchAgents]);
   
-  // Handle node selection
+  // Handle node selection with proper type casting
   const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
-    setSelectedAgent(node);
+    setSelectedAgent(node as AgentNodeType);
   }, [setSelectedAgent]);
   
   // Handle pane click (deselect)
@@ -59,7 +55,7 @@ const AgentFlowInner = () => {
     <div className="flex h-screen">
       <div className="flex-1">
         <ReactFlow
-          nodes={nodes}
+          nodes={nodes as unknown as Node[]}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}

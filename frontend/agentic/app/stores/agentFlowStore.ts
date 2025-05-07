@@ -1,33 +1,36 @@
 import { create } from 'zustand';
-import { Node, Edge, addEdge, OnConnect, OnNodesChange, OnEdgesChange, applyNodeChanges, applyEdgeChanges } from '@xyflow/react';
-import { agentService } from '../services/api';
+import { 
+  Node, 
+  Edge, 
+  addEdge, 
+  OnConnect, 
+  OnNodesChange, 
+  OnEdgesChange, 
+  applyNodeChanges, 
+  applyEdgeChanges, 
+  NodeChange, 
+  EdgeChange,
+  XYPosition
+} from '@xyflow/react';
+import { agentService, Agent, AgentCreateData } from '../services/api';
+import { AxiosError } from 'axios';
 
-export type AgentNode = Node<{
+// Define the structure of node data
+export interface AgentData extends Record<string, unknown> {
   label: string;
   agentId?: number;
-  agentData?: {
-    id: number;
-    name: string;
-    description: string;
-    role: string;
-    goal: string;
-    backstory: string;
-    config?: {
-      model: string;
-      temperature: number;
-      max_tokens: number;
-      verbose: boolean;
-      allow_delegation: boolean;
-    };
-  };
-}>;
+  agentData?: Agent;
+}
+
+// Type definition for Agent nodes in the flow
+export type AgentNode = Node<AgentData>;
 
 type AgentFlowState = {
   nodes: AgentNode[];
   edges: Edge[];
   selectedAgent: AgentNode | null;
   isAgentFormOpen: boolean;
-  agents: any[];
+  agents: Agent[];
   error: string | null;
   loading: boolean;
   
@@ -39,18 +42,18 @@ type AgentFlowState = {
   // Agent operations
   setSelectedAgent: (agent: AgentNode | null) => void;
   toggleAgentForm: () => void;
-  addNode: (node: Partial<AgentNode>) => void;
-  updateNode: (id: string, data: any) => void;
+  addNode: (node: Partial<AgentNode>) => AgentNode;
+  updateNode: (id: string, data: Partial<AgentData>) => void;
   removeNode: (id: string) => void;
   
   // Load data from API
   fetchAgents: () => Promise<void>;
-  createAgent: (agentData: any) => Promise<void>;
-  updateAgent: (id: number, agentData: any) => Promise<void>;
+  createAgent: (agentData: AgentCreateData) => Promise<Agent | undefined>;
+  updateAgent: (id: number, agentData: Partial<AgentCreateData>) => Promise<Agent | undefined>;
   deleteAgent: (id: number) => Promise<void>;
   
   // Convert to/from API format
-  convertAgentsToNodes: (agents: any[]) => void;
+  convertAgentsToNodes: (agents: Agent[]) => void;
 };
 
 // Helper to generate unique IDs
@@ -66,14 +69,15 @@ const useAgentFlowStore = create<AgentFlowState>((set, get) => ({
   loading: false,
   
   // Handle node changes
-  onNodesChange: (changes) => {
+  onNodesChange: (changes: NodeChange[]) => {
+    const updatedNodes = applyNodeChanges(changes, get().nodes as unknown as Node[]);
     set({
-      nodes: applyNodeChanges(changes, get().nodes),
+      nodes: updatedNodes as unknown as AgentNode[]
     });
   },
   
   // Handle edge changes
-  onEdgesChange: (changes) => {
+  onEdgesChange: (changes: EdgeChange[]) => {
     set({
       edges: applyEdgeChanges(changes, get().edges),
     });
@@ -144,10 +148,14 @@ const useAgentFlowStore = create<AgentFlowState>((set, get) => ({
       set({ agents });
       get().convertAgentsToNodes(agents);
       set({ loading: false });
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof AxiosError 
+        ? error.response?.data?.detail || error.message 
+        : 'Failed to fetch agents';
+      
       set({ 
         loading: false, 
-        error: error.response?.data?.detail || error.message || 'Failed to fetch agents' 
+        error: errorMessage 
       });
     }
   },
@@ -182,10 +190,14 @@ const useAgentFlowStore = create<AgentFlowState>((set, get) => ({
       });
       
       return newAgent;
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof AxiosError 
+        ? error.response?.data?.detail || error.message 
+        : 'Failed to create agent';
+      
       set({ 
         loading: false, 
-        error: error.response?.data?.detail || error.message || 'Failed to create agent'
+        error: errorMessage
       });
     }
   },
@@ -217,10 +229,14 @@ const useAgentFlowStore = create<AgentFlowState>((set, get) => ({
       }
       
       return updatedAgent;
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof AxiosError 
+        ? error.response?.data?.detail || error.message 
+        : 'Failed to update agent';
+      
       set({ 
         loading: false, 
-        error: error.response?.data?.detail || error.message || 'Failed to update agent'
+        error: errorMessage
       });
     }
   },
@@ -245,10 +261,14 @@ const useAgentFlowStore = create<AgentFlowState>((set, get) => ({
       if (nodeToRemove) {
         get().removeNode(nodeToRemove.id);
       }
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof AxiosError 
+        ? error.response?.data?.detail || error.message 
+        : 'Failed to delete agent';
+      
       set({ 
         loading: false, 
-        error: error.response?.data?.detail || error.message || 'Failed to delete agent'
+        error: errorMessage
       });
     }
   },
@@ -266,7 +286,7 @@ const useAgentFlowStore = create<AgentFlowState>((set, get) => ({
       return {
         id: `agent-${agent.id}`,
         type: 'agentNode',
-        position: { x, y },
+        position: { x, y } as XYPosition,
         data: {
           label: agent.name,
           agentId: agent.id,

@@ -2,9 +2,19 @@
 
 import React, { memo } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
+import { Agent } from '../services/api';
+
+// Match the data structure exactly as defined in agentFlowStore
+interface AgentData extends Record<string, unknown> {
+  label: string;
+  agentId?: number;
+  agentData?: Agent;
+}
 
 const AgentNode = ({ data, selected }: NodeProps) => {
-  const { label, agentData } = data;
+  // Cast data to our expected type
+  const nodeData = data as AgentData;
+  const { label, agentData } = nodeData;
   
   return (
     <div className={`agent-node p-3 rounded-lg shadow-md ${selected ? 'ring-2 ring-blue-500' : ''}`}
