@@ -49,6 +49,12 @@ class AgentFactory:
             llm_config["verbose"] = config.verbose
         
         # Create language model using Ollama
+        if llm_config["model"] == "agentic-specialist" or (
+            ":" in llm_config["model"] and "ollama" not in llm_config["model"]
+        ):
+            # For Ollama models, prefix with "ollama/" to help LiteLLM identify the provider
+            llm_config["model"] = f"ollama/{llm_config['model']}"
+            
         llm = Ollama(**llm_config)
         
         # Create tools list if available

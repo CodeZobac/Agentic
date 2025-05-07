@@ -36,13 +36,16 @@ def create_task(
     *,
     db: Session = Depends(get_db),
     task_in: TaskCreate,
-    current_user: User = Depends(get_current_active_user),
+    # Comment out authentication for development
+    # current_user: User = Depends(get_current_active_user),
 ) -> Any:
     """
     Create a new task owned by current user.
     """
+    # For development: hardcode user_id=1 instead of requiring authentication
+    user_id = 1  # Assuming user with ID 1 exists in the database
     task = task_crud.create_with_owner(
-        db, obj_in=task_in, user_id=current_user.id
+        db, obj_in=task_in, user_id=user_id
     )
     return task
 
@@ -52,7 +55,8 @@ def read_task(
     *,
     db: Session = Depends(get_db),
     task_id: int,
-    current_user: User = Depends(get_current_active_user),
+    # Comment out authentication for development
+    # current_user: User = Depends(get_current_active_user),
 ) -> Any:
     """
     Get a specific task by ID.
@@ -64,12 +68,12 @@ def read_task(
             detail="Task not found",
         )
     
-    # Check if the user is the owner of the task
-    if task.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough permissions",
-        )
+    # Comment out user permission check for development
+    # if task.user_id != current_user.id:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_403_FORBIDDEN,
+    #         detail="Not enough permissions",
+    #     )
     
     return task
 
@@ -137,7 +141,8 @@ def execute_task(
     db: Session = Depends(get_db),
     task_id: int,
     background_tasks: BackgroundTasks,
-    current_user: User = Depends(get_current_active_user),
+    # Comment out authentication for development
+    # current_user: User = Depends(get_current_active_user),
 ) -> Any:
     """
     Execute a specific task using AI agents.
@@ -149,12 +154,12 @@ def execute_task(
             detail="Task not found",
         )
     
-    # Check if the user is the owner of the task
-    if task.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough permissions",
-        )
+    # Comment out user permission check for development
+    # if task.user_id != current_user.id:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_403_FORBIDDEN,
+    #         detail="Not enough permissions",
+    #     )
     
     # Check if task is already running or completed
     if task.status == "in_progress":
@@ -175,7 +180,8 @@ def get_task_status(
     *,
     db: Session = Depends(get_db),
     task_id: int,
-    current_user: User = Depends(get_current_active_user),
+    # Comment out authentication for development
+    # current_user: User = Depends(get_current_active_user),
 ) -> Any:
     """
     Get the current status of a task.
@@ -187,12 +193,12 @@ def get_task_status(
             detail="Task not found",
         )
     
-    # Check if the user is the owner of the task
-    if task.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough permissions",
-        )
+    # Comment out user permission check for development
+    # if task.user_id != current_user.id:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_403_FORBIDDEN,
+    #         detail="Not enough permissions",
+    #     )
     
     # Get task status from crew manager
     crew_manager = CrewManager(db)

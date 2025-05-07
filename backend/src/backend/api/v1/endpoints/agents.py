@@ -19,14 +19,14 @@ def read_agents(
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 100,
-    current_user: User = Depends(get_current_active_user),
+    # Commenting out the authentication requirement
+    # current_user: User = Depends(get_current_active_user),
 ) -> Any:
     """
-    Read agents owned by current user.
+    Read all agents. (Authentication requirement removed for development)
     """
-    agents = agent_crud.get_multi_by_owner(
-        db, user_id=current_user.id, skip=skip, limit=limit
-    )
+    # Return all agents instead of just those owned by the current user
+    agents = agent_crud.get_multi(db, skip=skip, limit=limit)
     return agents
 
 
@@ -35,13 +35,30 @@ def create_agent(
     *,
     db: Session = Depends(get_db),
     agent_in: AgentCreate,
-    current_user: User = Depends(get_current_active_user),
+    # Commenting out the authentication requirement
+    # current_user: User = Depends(get_current_active_user),
 ) -> Any:
     """
-    Create a new agent owned by current user.
+    Create a new agent. (Authentication requirement removed for development)
     """
+    # Since we're not requiring authentication, we'll use a default user
+    # Get the first user from the database or create one if none exists
+    user = db.query(User).first()
+    if not user:
+        # If no user exists, create a default user
+        from backend.core.security import get_password_hash
+        user = User(
+            email="default@example.com",
+            username="default",
+            hashed_password=get_password_hash("default"),
+            is_active=True
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    
     agent = agent_crud.create_with_owner(
-        db, obj_in=agent_in, user_id=current_user.id
+        db, obj_in=agent_in, user_id=user.id
     )
     return agent
 
@@ -51,10 +68,11 @@ def read_agent(
     *,
     db: Session = Depends(get_db),
     agent_id: int,
-    current_user: User = Depends(get_current_active_user),
+    # Commenting out the authentication requirement
+    # current_user: User = Depends(get_current_active_user),
 ) -> Any:
     """
-    Get a specific agent by ID.
+    Get a specific agent by ID. (Authentication requirement removed for development)
     """
     agent = agent_crud.get(db, id=agent_id)
     if not agent:
@@ -63,13 +81,7 @@ def read_agent(
             detail="Agent not found",
         )
     
-    # Check if the user is the owner of the agent
-    if agent.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough permissions",
-        )
-    
+    # Removed permission check for development
     return agent
 
 
@@ -79,10 +91,11 @@ def update_agent(
     db: Session = Depends(get_db),
     agent_id: int,
     agent_in: AgentUpdate,
-    current_user: User = Depends(get_current_active_user),
+    # Commenting out the authentication requirement
+    # current_user: User = Depends(get_current_active_user),
 ) -> Any:
     """
-    Update a specific agent.
+    Update a specific agent. (Authentication requirement removed for development)
     """
     agent = agent_crud.get(db, id=agent_id)
     if not agent:
@@ -91,13 +104,7 @@ def update_agent(
             detail="Agent not found",
         )
     
-    # Check if the user is the owner of the agent
-    if agent.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough permissions",
-        )
-    
+    # Removed permission check for development
     agent = agent_crud.update(db, db_obj=agent, obj_in=agent_in)
     return agent
 
@@ -107,10 +114,11 @@ def delete_agent(
     *,
     db: Session = Depends(get_db),
     agent_id: int,
-    current_user: User = Depends(get_current_active_user),
+    # Commenting out the authentication requirement
+    # current_user: User = Depends(get_current_active_user),
 ) -> Any:
     """
-    Delete a specific agent.
+    Delete a specific agent. (Authentication requirement removed for development)
     """
     agent = agent_crud.get(db, id=agent_id)
     if not agent:
@@ -119,12 +127,6 @@ def delete_agent(
             detail="Agent not found",
         )
     
-    # Check if the user is the owner of the agent
-    if agent.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough permissions",
-        )
-    
+    # Removed permission check for development
     agent = agent_crud.remove(db, id=agent_id)
     return agent
