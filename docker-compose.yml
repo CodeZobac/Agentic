@@ -29,9 +29,17 @@ services:
     restart: unless-stopped
     networks:
       - agentic-network
-    command: >
-      sh -c "ollama serve & sleep 10 && ollama create agentic-specialist -f /models/Modelfile && tail -f /dev/null"
-
+    # Enable GPU support
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    command: serve && create agentic-specialist -f /models/Modelfile 
 networks:
   agentic-network:
     driver: bridge
