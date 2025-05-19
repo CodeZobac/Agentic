@@ -13,7 +13,7 @@ class AgentConfigBase(BaseSchema):
     """
     Base schema for agent configuration.
     """
-    model: Optional[str] = "gpt-4o"
+    model: Optional[str] = None
     temperature: Optional[float] = 0.7
     max_tokens: Optional[int] = 1000
     verbose: Optional[bool] = False

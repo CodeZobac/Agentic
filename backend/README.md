@@ -33,7 +33,6 @@ poetry install
 ```
 DATABASE_URL=sqlite:///./agentic.db
 SECRET_KEY=your-secret-key
-OPENAI_API_KEY=your-openai-api-key
 ```
 
 ### Running the Application

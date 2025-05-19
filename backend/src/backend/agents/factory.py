@@ -98,8 +98,149 @@ class AgentToolFactory:
             return AgentToolFactory.create_search_tool(tool_config)
         elif tool_name == "calculator":
             return AgentToolFactory.create_calculator_tool(tool_config)
+        elif tool_name == "file_writer":
+            return AgentToolFactory.create_file_writer_tool(tool_config)
+        elif tool_name == "file_reader":
+            return AgentToolFactory.create_file_reader_tool(tool_config)
+        elif tool_name == "directory_reader":
+            return AgentToolFactory.create_directory_reader_tool(tool_config)
+        elif tool_name == "serper_dev_tool":
+            return AgentToolFactory.create_serper_dev_tool(tool_config)
+        elif tool_name == "website_search_tool":
+            return AgentToolFactory.create_website_search_tool(tool_config)
         # Add more tools as needed
         return None
+
+    @staticmethod
+    def create_serper_dev_tool(config: Dict[str, Any]) -> Callable:
+        """
+        Create a SerperDevTool for agents (placeholder).
+        Requires SERPER_API_KEY environment variable.
+        Args:
+            config: Configuration for the SerperDevTool.
+        Returns:
+            Callable: SerperDevTool function.
+        """
+        @tool
+        def serper_dev_tool(query: str) -> str:
+            """Search the web using Serper API for up-to-date information.
+            Args:
+                query (str): The search query.
+            """
+            # WIP this would use the SerperDevTool from crewai_tools
+            # and require a SERPER_API_KEY environment variable.
+            api_key = os.getenv("SERPER_API_KEY")
+            if not api_key:
+                return "Error: SERPER_API_KEY not set. This tool requires an API key for serper.dev."
+            return f"SerperDevTool search results for: {query} (API Key: {api_key[:4]}...)"
+        return serper_dev_tool
+
+    @staticmethod
+    def create_website_search_tool(config: Dict[str, Any]) -> Callable:
+        """
+        Create a WebsiteSearchTool for agents (placeholder).
+        Args:
+            config: Configuration for the WebsiteSearchTool.
+        Returns:
+            Callable: WebsiteSearchTool function.
+        """
+        @tool
+        def website_search_tool(website_url: str, query: str) -> str:
+            """Search a specific website for information.
+            Args:
+                website_url (str): The URL of the website to search.
+                query (str): The search query.
+            """
+            # WIP this would use the WebsiteSearchTool from crewai_tools.
+            return f"WebsiteSearchTool results for '{query}' on {website_url}"
+        return website_search_tool
+
+    @staticmethod
+    def create_directory_reader_tool(config: Dict[str, Any]) -> Callable:
+        """
+        Create a directory reader tool for agents.
+
+        Args:
+            config: Configuration for the directory reader tool.
+
+        Returns:
+            Callable: Directory reader tool function.
+        """
+        @tool
+        def directory_reader(directory_path: str) -> str:
+            """Read and list contents of a specified directory.
+            Args:
+                directory_path (str): The path to the directory.
+            """
+            try:
+                if not os.path.exists(directory_path):
+                    return f"Error: Directory not found at {directory_path}"
+                if not os.path.isdir(directory_path):
+                    return f"Error: Path is not a directory {directory_path}"
+                
+                items = os.listdir(directory_path)
+                return f"Contents of {directory_path}:\n" + "\n".join(items)
+            except Exception as e:
+                return f"Error reading directory {directory_path}: {str(e)}"
+        return directory_reader
+
+    @staticmethod
+    def create_file_writer_tool(config: Dict[str, Any]) -> Callable:
+        """
+        Create a file writer tool for agents.
+
+        Args:
+            config: Configuration for the file writer tool.
+
+        Returns:
+            Callable: File writer tool function.
+        """
+        @tool
+        def file_writer(file_path: str, content: str) -> str:
+            """Write content to a specified file.
+            Args:
+                file_path (str): The path to the file where content will be written.
+                content (str): The content to write to the file.
+            """
+            try:
+                # Ensure directory exists
+                directory = os.path.dirname(file_path)
+                if directory and not os.path.exists(directory):
+                    os.makedirs(directory, exist_ok=True)
+                
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    f.write(content)
+                return f"Successfully wrote to {file_path}"
+            except Exception as e:
+                return f"Error writing to file {file_path}: {str(e)}"
+        return file_writer
+
+    @staticmethod
+    def create_file_reader_tool(config: Dict[str, Any]) -> Callable:
+        """
+        Create a file reader tool for agents.
+
+        Args:
+            config: Configuration for the file reader tool.
+
+        Returns:
+            Callable: File reader tool function.
+        """
+        @tool
+        def file_reader(file_path: str) -> str:
+            """Read content from a specified file.
+            Args:
+                file_path (str): The path to the file to be read.
+            """
+            try:
+                if not os.path.exists(file_path):
+                    return f"Error: File not found at {file_path}"
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                return content
+            except Exception as e:
+                return f"Error reading file {file_path}: {str(e)}"
+        return file_reader
     
     @staticmethod
     def create_search_tool(config: Dict[str, Any]) -> Callable:
