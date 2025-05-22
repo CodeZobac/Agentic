@@ -1,0 +1,25 @@
+# Issue labeler configuration
+# Add more detailed regex patterns based on your specific needs
+
+'type:bug':
+  - '(?i)\[Bug\]:'
+  - '(?i)bug(\s|:|$)'
+
+'type:feature':
+  - '(?i)\[Feature\]:'
+  - '(?i)feature(\s|:|$)'
+  - '(?i)enhancement(\s|:|$)'
+
+'type:docs':
+  - '(?i)\[Docs\]:'
+  - '(?i)documentation(\s|:|$)'
+
+'type:question':
+  - '(?i)\[Question\]:'
+  - '(?i)question(\s|:|$)'
+  - '\?$'
+
+'type:security':
+  - '(?i)\[Security\]:'
+  - '(?i)security(\s|:|$)'
+  - '(?i)vulnerability(\s|:|$)'

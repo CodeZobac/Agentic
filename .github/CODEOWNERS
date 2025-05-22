@@ -1,0 +1,25 @@
+# Code Owners for Agentic Project
+# Learn more about CODEOWNERS: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# These owners will be the default owners for everything in the repo
+* @repo-admin
+
+# Backend specific code
+/backend/ @backend-team-lead
+
+# Frontend specific code 
+/frontend/ @frontend-team-lead
+
+# DevOps and CI files
+/.github/ @devops-lead
+/Makefile @devops-lead
+/docker-compose.yml @devops-lead
+
+# Database related files
+/backend/src/backend/db/ @database-expert
+
+# API endpoints
+/backend/src/backend/api/ @api-expert
+
+# Agent related code
+/backend/src/backend/agents/ @ai-expert
