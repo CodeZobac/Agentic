@@ -1,4 +1,4 @@
-version: '3.8'
+
 
 services:
   backend:
@@ -17,6 +17,7 @@ services:
     restart: unless-stopped
     networks:
       - agentic-network
+    command: ["tail", "-f", "/dev/null"]  # Keep container running for manual commands
 
   ollama:
     image: ollama/ollama:latest

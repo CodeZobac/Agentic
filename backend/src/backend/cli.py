@@ -78,6 +78,21 @@ def handle_create_agent(args):
         agent = agent_crud.create_with_owner(db=db, obj_in=agent_in, user_id=DEFAULT_USER_ID)
         logging.info(f"Agent '{agent.name}' created with ID: {agent.id}")
 
+def handle_list_agents(args):
+    """Handles the 'list-agents' CLI command."""
+    with get_db_session() as db:
+        agents = agent_crud.get_multi_by_owner(db=db, user_id=DEFAULT_USER_ID)
+        if not agents:
+            logging.info("No agents found.")
+            return
+        
+        logging.info("Available agents:")
+        for agent in agents:
+            config_info = ""
+            if agent.config:
+                config_info = f" (Model: {agent.config.model}, Temp: {agent.config.temperature})"
+            logging.info(f"  ID: {agent.id} | Name: {agent.name} | Role: {agent.role}{config_info}")
+
 def handle_create_task(args):
     """Handles the 'create-task' CLI command."""
     with get_db_session() as db:
@@ -114,7 +129,6 @@ def handle_run_task(args):
         # The CLI will print this message and exit, while the task runs in the background.
         logging.info(f"Task {args.task_id} execution started in the background.")
 
-
 def main():
     """Execute CLI command."""
     setup_logging()
@@ -143,6 +157,10 @@ def main():
     parser_create_agent.add_argument("--verbose", action=argparse.BooleanOptionalAction, help="Enable verbose logging for the agent")
     parser_create_agent.add_argument("--allow-delegation", type=lambda x: (str(x).lower() == 'true'), choices=[True, False], help="Allow agent delegation (true/false)")
     parser_create_agent.set_defaults(func=handle_create_agent)
+
+    # List Agents command
+    parser_list_agents = subparsers.add_parser("list-agents", help="List all agents")
+    parser_list_agents.set_defaults(func=handle_list_agents)
 
     # Create Task command
     parser_create_task = subparsers.add_parser("create-task", help="Create a new task")
